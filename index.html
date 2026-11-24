@@ -5,6 +5,10 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Ruleta Maestra — Sorteo de Nombres</title>
+    <script type="text/javascript" nonce="fdf4828b35b94f17882e9d1af5b"
+        src="//local.adguard.org?ts=1795463636013&amp;type=content-script&amp;dmn=chatgpt.com&amp;app=chrome.exe&amp;css=1&amp;js=1&amp;gcss=1&amp;rel=1&amp;rji=1&amp;sbe=0"></script>
+    <script type="text/javascript" nonce="fdf4828b35b94f17882e9d1af5b"
+        src="//local.adguard.org?ts=1795463636013&amp;name=AdGuard%20Popup%20Blocker&amp;name=AdGuard%20Extra&amp;type=user-script"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -930,6 +934,15 @@
             }
 
             // Audio Engine
+            const musica = new Audio("WhatsApp Audio 2026-11-23 at 6.44.27 PM.mpeg");
+            musica.volume = 0.6;
+            musica.loop = true;
+            musica.preload = "auto";
+
+            function detenerMusica() {
+                musica.pause();
+                musica.currentTime = 0;
+            }
             let audioCtx = null;
             let lastTickAt = 0;
             function getAudio() {
@@ -1242,6 +1255,10 @@
                 const list = activeList();
                 if (state.isSpinning || list.length === 0) return;
                 getAudio();
+                if (state.soundEnabled) {
+                    musica.currentTime = 0;
+                    musica.play().catch(console.warn);
+                }
                 winnerModal.classList.add('hidden');
 
                 let targetIdx = -1;
@@ -1296,7 +1313,7 @@
                 const currentMod = ((startRot % 360) + 360) % 360;
                 const deltaMod = (desiredMod - currentMod + 360) % 360;
                 const totalDelta = (6 + Math.floor(Math.random() * 4)) * 360 + deltaMod;
-                const duration = 4800 + Math.random() * 1100;
+                const duration = 10000 + Math.random() * 2000;
 
                 let startTime = null;
                 let lastPeg = Math.floor(startRot / sliceDeg);
@@ -1313,7 +1330,7 @@
                     if (peg !== lastPeg) {
                         lastPeg = peg;
                         const sr = Math.max(0, 1 - p);
-                        playTick(sr);
+                        // playTick(sr); // La música sustituye los clics durante el giro.
                         flapper = -Math.min(28, 12 + sr * 18);
                     }
                     flapper *= 0.82;
@@ -1344,6 +1361,7 @@
                             state.participants = state.participants.map((x) => x.id === winner.id ? { ...x, active: false } : x);
                         }
                         saveState();
+                        detenerMusica();
                         playWin();
                         launchConfetti(color);
                         drawWheel(state.rotation);
@@ -1713,8 +1731,8 @@
             tabRig.addEventListener('click', () => { if (!state.stealthMode) { state.activeTab = 'rig'; renderAll(); } });
             navNames.addEventListener('click', () => { state.focusSolo = false; state.activeTab = 'names'; renderAll(); });
             navHistory.addEventListener('click', () => { state.focusSolo = false; state.activeTab = 'history'; renderAll(); });
-            navSound.addEventListener('click', () => { state.soundEnabled = !state.soundEnabled; renderChrome(); });
-            mobileSoundBtn.addEventListener('click', () => { state.soundEnabled = !state.soundEnabled; renderChrome(); });
+            navSound.addEventListener('click', () => { state.soundEnabled = !state.soundEnabled; if (!state.soundEnabled) musica.pause(); else if (state.isSpinning) musica.play().catch(console.warn); renderChrome(); });
+            mobileSoundBtn.addEventListener('click', () => { state.soundEnabled = !state.soundEnabled; if (!state.soundEnabled) musica.pause(); else if (state.isSpinning) musica.play().catch(console.warn); renderChrome(); });
             focusBtn.addEventListener('click', () => { state.focusSolo = !state.focusSolo; renderChrome(); });
 
             // Triple-click brand toggles stealth mode
